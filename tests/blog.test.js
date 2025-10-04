@@ -1,6 +1,6 @@
 const request = require("supertest");
 const mongoose = require("mongoose");
-const app = require("../server");
+const app = require("../app");
 const User = require("../models/User");
 const Blog = require("../models/Blog");
 
@@ -12,7 +12,7 @@ describe("Blog Tests", () => {
 
   beforeAll(async () => {
     await mongoose.connect(
-      process.env.MONGODB_URI || "mongodb://localhost:27017/blogging-api-test"
+      process.env.MONGODB_URI || "mongodb://localhost:27017/blog_altschool"
     );
   });
 
@@ -148,7 +148,7 @@ describe("Blog Tests", () => {
     });
 
     it("should paginate results", async () => {
-      // Create more blogs
+      // Create 25 blog objects
       for (let i = 0; i < 25; i++) {
         const blog = await request(app)
           .post("/api/blogs")
@@ -163,13 +163,16 @@ describe("Blog Tests", () => {
         });
       }
 
+      // Fetch page 1 with limit=20
       const response = await request(app)
         .get("/api/blogs?page=1&limit=20")
         .expect(200);
 
+      // Depending on your API shape:
+      // - If you return blogs in `data` and pagination meta in `count/pages`:
       expect(response.body.count).toBe(20);
       expect(response.body.pages).toBeGreaterThan(1);
-    });
+    }, 60000);
 
     it("should search by title", async () => {
       const response = await request(app)

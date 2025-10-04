@@ -1,11 +1,14 @@
-const request = require('supertest');
-const mongoose = require('mongoose');
-const app = require('../server');
-const User = require('../models/User');
+const request = require("supertest");
+const mongoose = require("mongoose");
+const app = require("../app");
+const User = require("../models/User");
 
-describe('Authentication Tests', () => {
+describe("Authentication Tests", () => {
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/blogging-api-test');
+    await mongoose.connect(
+      process.env.MONGODB_URI ||
+        "mongodb://localhost:27017/blog_altschool"
+    );
   });
 
   afterAll(async () => {
@@ -17,63 +20,63 @@ describe('Authentication Tests', () => {
     await User.deleteMany({});
   });
 
-  describe('POST /api/auth/signup', () => {
-    it('should register a new user successfully', async () => {
+  describe("POST /api/auth/signup", () => {
+    it("should register a new user successfully", async () => {
       const userData = {
-        first_name: 'John',
-        last_name: 'Doe',
-        email: 'john.doe@test.com',
-        password: 'password123'
+        first_name: "John",
+        last_name: "Doe",
+        email: "john.doe@test.com",
+        password: "password123",
       };
 
       const response = await request(app)
-        .post('/api/auth/signup')
+        .post("/api/auth/signup")
         .send(userData)
         .expect(201);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.user).toHaveProperty('email', userData.email);
-      expect(response.body.data).toHaveProperty('token');
-      expect(response.body.data.user).not.toHaveProperty('password');
+      expect(response.body.data.user).toHaveProperty("email", userData.email);
+      expect(response.body.data).toHaveProperty("token");
+      expect(response.body.data.user).not.toHaveProperty("password");
     });
 
-    it('should fail with duplicate email', async () => {
+    it("should fail with duplicate email", async () => {
       const userData = {
-        first_name: 'John',
-        last_name: 'Doe',
-        email: 'john.doe@test.com',
-        password: 'password123'
+        first_name: "John",
+        last_name: "Doe",
+        email: "john.doe@test.com",
+        password: "password123",
       };
 
-      await request(app).post('/api/auth/signup').send(userData);
+      await request(app).post("/api/auth/signup").send(userData);
       const response = await request(app)
-        .post('/api/auth/signup')
+        .post("/api/auth/signup")
         .send(userData)
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.message).toContain('email already exists');
+      expect(response.body.message).toContain("email already exists");
     });
 
-    it('should fail without required fields', async () => {
+    it("should fail without required fields", async () => {
       const response = await request(app)
-        .post('/api/auth/signup')
-        .send({ email: 'test@test.com' })
+        .post("/api/auth/signup")
+        .send({ email: "test@test.com" })
         .expect(400);
 
       expect(response.body.success).toBe(false);
     });
 
-    it('should fail with invalid email format', async () => {
+    it("should fail with invalid email format", async () => {
       const userData = {
-        first_name: 'John',
-        last_name: 'Doe',
-        email: 'invalid-email',
-        password: 'password123'
+        first_name: "John",
+        last_name: "Doe",
+        email: "invalid-email",
+        password: "password123",
       };
 
       const response = await request(app)
-        .post('/api/auth/signup')
+        .post("/api/auth/signup")
         .send(userData)
         .expect(400);
 
@@ -81,58 +84,61 @@ describe('Authentication Tests', () => {
     });
   });
 
-  describe('POST /api/auth/signin', () => {
+  describe("POST /api/auth/signin", () => {
     beforeEach(async () => {
-      await request(app).post('/api/auth/signup').send({
-        first_name: 'Jane',
-        last_name: 'Smith',
-        email: 'jane.smith@test.com',
-        password: 'password123'
+      await request(app).post("/api/auth/signup").send({
+        first_name: "Jane",
+        last_name: "Smith",
+        email: "jane.smith@test.com",
+        password: "password123",
       });
     });
 
-    it('should login user successfully', async () => {
+    it("should login user successfully", async () => {
       const response = await request(app)
-        .post('/api/auth/signin')
+        .post("/api/auth/signin")
         .send({
-          email: 'jane.smith@test.com',
-          password: 'password123'
+          email: "jane.smith@test.com",
+          password: "password123",
         })
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toHaveProperty('token');
-      expect(response.body.data.user).toHaveProperty('email', 'jane.smith@test.com');
+      expect(response.body.data).toHaveProperty("token");
+      expect(response.body.data.user).toHaveProperty(
+        "email",
+        "jane.smith@test.com"
+      );
     });
 
-    it('should fail with wrong password', async () => {
+    it("should fail with wrong password", async () => {
       const response = await request(app)
-        .post('/api/auth/signin')
+        .post("/api/auth/signin")
         .send({
-          email: 'jane.smith@test.com',
-          password: 'wrongpassword'
+          email: "jane.smith@test.com",
+          password: "wrongpassword",
         })
         .expect(401);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.message).toBe('Invalid credentials');
+      expect(response.body.message).toBe("Invalid credentials");
     });
 
-    it('should fail with non-existent email', async () => {
+    it("should fail with non-existent email", async () => {
       const response = await request(app)
-        .post('/api/auth/signin')
+        .post("/api/auth/signin")
         .send({
-          email: 'nonexistent@test.com',
-          password: 'password123'
+          email: "nonexistent@test.com",
+          password: "password123",
         })
         .expect(401);
 
       expect(response.body.success).toBe(false);
     });
 
-    it('should fail without credentials', async () => {
+    it("should fail without credentials", async () => {
       const response = await request(app)
-        .post('/api/auth/signin')
+        .post("/api/auth/signin")
         .send({})
         .expect(400);
 
