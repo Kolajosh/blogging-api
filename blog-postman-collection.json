@@ -1,0 +1,388 @@
+{
+  "info": {
+    "name": "Blogging API - AltSchool Project",
+    "description": "Complete API collection for the Blogging API with authentication and CRUD operations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Sign Up",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"auth_token\", jsonData.data.token);",
+                  "    pm.environment.set(\"user_id\", jsonData.data.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "signup"]
+            },
+            "description": "Register a new user. Automatically saves the token to environment variables."
+          },
+          "response": []
+        },
+        {
+          "name": "Sign In",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"auth_token\", jsonData.data.token);",
+                  "    pm.environment.set(\"user_id\", jsonData.data.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/signin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "signin"]
+            },
+            "description": "Login with existing credentials. Automatically saves the token to environment variables."
+          },
+          "response": []
+        }
+      ],
+      "description": "Authentication endpoints for user registration and login"
+    },
+    {
+      "name": "Blogs",
+      "item": [
+        {
+          "name": "Create Blog",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"blog_id\", jsonData.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Getting Started with Node.js\",\n  \"description\": \"A comprehensive guide to building APIs with Node.js and Express\",\n  \"tags\": [\"nodejs\", \"javascript\", \"backend\", \"api\"],\n  \"body\": \"Node.js is a powerful JavaScript runtime built on Chrome's V8 JavaScript engine. It allows developers to build scalable network applications using JavaScript on the server side. In this blog post, we'll explore the fundamentals of Node.js and how to create RESTful APIs using Express framework. We'll cover routing, middleware, database integration, and authentication. By the end of this guide, you'll have a solid understanding of building production-ready APIs.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/blogs",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blogs"]
+            },
+            "description": "Create a new blog post. Blog is created in draft state by default. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Published Blogs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/blogs?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blogs"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "order_by",
+                  "value": "read_count",
+                  "description": "Sort by: read_count, reading_time, or createdAt",
+                  "disabled": true
+                },
+                {
+                  "key": "title",
+                  "value": "nodejs",
+                  "description": "Search by title",
+                  "disabled": true
+                },
+                {
+                  "key": "tags",
+                  "value": "nodejs,javascript",
+                  "description": "Filter by tags (comma-separated)",
+                  "disabled": true
+                },
+                {
+                  "key": "author",
+                  "value": "John",
+                  "description": "Search by author name",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all published blogs. Public endpoint - no authentication required. Supports pagination, search, and filtering."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Blog",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "description": "Optional - required only for viewing draft blogs",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/blogs/{{blog_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blogs", "{{blog_id}}"]
+            },
+            "description": "Get a single blog by ID. Increments read count by 1. Public for published blogs, requires authentication for draft blogs."
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Blogs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/blogs/user/me?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blogs", "user", "me"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "state",
+                  "value": "draft",
+                  "description": "Filter by state: draft or published",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all blogs created by the authenticated user. Requires authentication. Supports pagination and state filtering."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Blog",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Advanced Node.js Techniques\",\n  \"description\": \"Updated description with more advanced topics\",\n  \"tags\": [\"nodejs\", \"javascript\", \"advanced\", \"performance\"],\n  \"body\": \"This updated blog post now covers advanced Node.js topics including streams, clusters, worker threads, and performance optimization techniques. Learn how to build high-performance, scalable applications that can handle millions of requests.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/blogs/{{blog_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blogs", "{{blog_id}}"]
+            },
+            "description": "Update a blog post. Only the blog owner can update. Works for both draft and published blogs. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Publish Blog",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"state\": \"published\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/blogs/{{blog_id}}/state",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blogs", "{{blog_id}}", "state"]
+            },
+            "description": "Change blog state to published. Only the blog owner can change state. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Unpublish Blog (Set to Draft)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"state\": \"draft\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/blogs/{{blog_id}}/state",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blogs", "{{blog_id}}", "state"]
+            },
+            "description": "Change blog state back to draft. Only the blog owner can change state. Requires authentication."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Blog",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/blogs/{{blog_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blogs", "{{blog_id}}"]
+            },
+            "description": "Delete a blog post. Only the blog owner can delete. Works for both draft and published blogs. Requires authentication."
+          },
+          "response": []
+        }
+      ],
+      "description": "Blog CRUD operations and management"
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "API Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Check if the API is running and get basic information about available endpoints."
+          },
+          "response": []
+        }
+      ],
+      "description": "Health check and API information"
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "blog_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
