@@ -12,7 +12,8 @@ describe("Blog Tests", () => {
 
   beforeAll(async () => {
     await mongoose.connect(
-      process.env.MONGODB_URI || "mongodb://localhost:27017/blog_altschool"
+      process.env.MONGODB_URI_TEST ||
+        "mongodb://localhost:27017/blog_altschool-test"
     );
   });
 
